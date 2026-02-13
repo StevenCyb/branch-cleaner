@@ -50,9 +50,10 @@ type model struct {
 	quitting bool
 	// Names of deleted branches for summary output
 	deleted []string
+	repoPath string
 }
 
-func InitialModel(branches []BranchInfo) tea.Model {
+func InitialModel(path string, branches []BranchInfo) tea.Model {
 	items := make([]list.Item, len(branches))
 	for i, b := range branches {
 		items[i] = item(b)
@@ -63,6 +64,7 @@ func InitialModel(branches []BranchInfo) tea.Model {
 		list:     l,
 		branches: branches,
 		marked:   make(map[int]struct{}),
+		repoPath: path,
 	}
 }
 
@@ -104,7 +106,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				toDelete = append(toDelete, branch)
 			}
 
-			deleted := DeleteBranches(ctx, toDelete)
+			deleted := DeleteBranches(ctx, m.repoPath, toDelete)
 
 			m.deleted = deleted
 			m.quitting = true

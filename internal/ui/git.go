@@ -9,14 +9,15 @@ import (
 	"time"
 )
 
-func DeleteBranches(ctx context.Context, branches []string) []string {
+func DeleteBranches(ctx context.Context, path string, branches []string) []string {
 	var deleted = make([]string, 0, len(branches))
 	for _, branch := range branches {
 		cmd := exec.CommandContext(ctx, "git", "branch", "-D", branch) //nolint:gosec // want to run git command
-		cmd.Stdout = nil
-		cmd.Stderr = nil
-		_ = cmd.Run()
-		deleted = append(deleted, branch)
+		cmd.Dir = path
+		// Let git print errors to callers' stderr if needed; only record successful deletions
+		if err := cmd.Run(); err == nil {
+			deleted = append(deleted, branch)
+		}
 	}
 	return deleted
 }
